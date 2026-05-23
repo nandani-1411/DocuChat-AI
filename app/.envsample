@@ -1,0 +1,4 @@
+GEMINI_API_KEY =your-gemini-api-key
+GROQ_API_KEY=your-groq-key
+# HUGGINGFACEHUB_API_TOKEN=your-hf-key
+MISTRAL_API_KEY=your-mistral-key

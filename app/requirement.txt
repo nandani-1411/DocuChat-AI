@@ -1,0 +1,62 @@
+# ========================
+# FastAPI Backend
+# ========================
+fastapi
+uvicorn
+python-multipart
+
+
+# =========================
+# Core LangChain Packages
+# =========================
+langchain                  # Main LangChain framework
+langchain-core             # Core abstractions and runnable interfaces
+langchain-community        # Community integrations/loaders/vectorstores
+langchain-text-splitters   # Text chunking utilities for RAG
+
+# =========================
+# Gemini / Google AI
+# =========================
+langchain-google-genai     # LangChain integration for Gemini
+google-generativeai  
+      # Official Google Gemini SDK
+
+# =========================
+# Mistral AI
+# =========================
+langchain-mistralai        # Mistral embeddings + chat model integration
+mistralai
+# =========================
+# Vector Databases
+# =========================
+chromadb                   # Persistent vector database for embeddings
+faiss-cpu                  # Fast similarity search vector store
+
+# =========================
+# Document / Data Loaders
+# =========================
+pypdf                        # PDF
+python-docx                  # .docx
+unstructured[docx,xlsx,pptx] # .doc, .xlsx, .pptx (unstructured backend)
+openpyxl                     # Excel read/write
+xlrd                         # Legacy .xls
+ 
+# Image OCR
+pytesseract
+Pillow
+
+
+# =========================
+# Environment Variables
+# =========================
+python-dotenv              # Load API keys from .env file
+
+# =========================
+# Tokenization
+# =========================
+tiktoken                   # Token counting/chunk sizing utility
+
+# =========================
+# Embedding Utilities
+# =========================
+sentence-transformers      # Local embedding/helper models

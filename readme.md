@@ -77,7 +77,7 @@ AI-powered Retrieval-Augmented Generation (RAG) chatbot that supports multiple d
 ## 1. Clone Repository
 
 ```bash
-git clone https://github.com/your-username/multi-file-rag-chatbot.git
+git clone https://github.com/nandani-1411/DocuChat-AI.git
 ```
 
 ---
@@ -234,19 +234,7 @@ GET /supported-formats
 - Compare information across files
 - Generate notes from documents
 
----
 
-# 📸 Screenshots
-
-## Upload UI
-
-![Upload UI](screenshots/upload.png)
-
----
-
-## Chat Interface
-
-![Chat UI](screenshots/chat.png)
 
 ---
 

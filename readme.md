@@ -10,21 +10,17 @@ AI-powered Retrieval-Augmented Generation (RAG) chatbot that supports multiple d
 - Chat with your documents using AI
 - Supports:
   - PDF
-  - DOC / DOCX
   - PPT / PPTX
   - XLS / XLSX
   - CSV
   - TXT
-  - HTML
-  - PNG / JPG / JPEG
-  - TIFF / BMP / WEBP
+
 - Semantic search using vector embeddings
 - Context-aware responses
 - FastAPI backend
 - React frontend
 - LangChain RAG pipeline
 - Vector database integration
-- OCR support for images
 - Drag and drop upload UI
 
 ---
@@ -47,7 +43,6 @@ AI-powered Retrieval-Augmented Generation (RAG) chatbot that supports multiple d
 - Embeddings
 - Retrieval-Augmented Generation (RAG)
 - Semantic Search
-- OCR (Tesseract)
 
 ---
 
@@ -240,7 +235,7 @@ GET /supported-formats
 
 ## AI Response
 
-![Response](screenshots/response.png)
+![Response](screenshots/res.png)
 
 ---
 

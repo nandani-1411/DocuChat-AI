@@ -1,6 +1,6 @@
 # 🤖 Multi-File RAG Chatbot
 
-AI-powered Retrieval-Augmented Generation (RAG) chatbot that supports multiple document formats including PDF, DOCX, PPTX, Excel, CSV, TXT, HTML, and Images for contextual question-answering using LangChain, FastAPI, React, and vector databases.
+AI-powered Retrieval-Augmented Generation (RAG) chatbot that supports multiple document formats including PDF, DOCX, PPTX, Excel, CSV, TXT, for contextual question-answering using LangChain, FastAPI, React, and vector databases.
 
 ---
 

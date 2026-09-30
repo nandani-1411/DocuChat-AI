@@ -9,6 +9,7 @@ wheels/
 # Virtual environments
 .venv
 chroma_db
+chroma_db_local
 uploads
 .env
 __pycache__

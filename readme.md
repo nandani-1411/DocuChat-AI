@@ -1,264 +1,126 @@
-# 🤖 Multi-File RAG Chatbot
+# 🤖 DocuChat-AI
 
-AI-powered Retrieval-Augmented Generation (RAG) chatbot that supports multiple document formats including PDF, DOCX, PPTX, Excel, CSV, TXT, for contextual question-answering using LangChain, FastAPI, React, and vector databases.
+A simple **AI-powered RAG chatbot** that lets you upload multiple documents and ask questions about their content.
 
----
+### 🌐 Live Demo
 
-# 🚀 Features
-
-- Multiple file upload support
-- Chat with your documents using AI
-- Supports:
-  - PDF
-  - PPT / PPTX
-  - XLS / XLSX
-  - CSV
-  - TXT
-
-- Semantic search using vector embeddings
-- Context-aware responses
-- FastAPI backend
-- React frontend
-- LangChain RAG pipeline
-- Vector database integration
-- Drag and drop upload UI
+👉 https://docuchat-web.onrender.com/
 
 ---
 
-# 🛠️ Tech Stack
+## ✨ Features
 
-## Frontend
-- React
-- JavaScript
-- Fetch API
+* 📄 Upload multiple documents
+* 💬 Chat with your documents
+* 🔍 Semantic search
+* 🧠 Context-aware AI responses
+* 📁 Supports multiple file formats
+* 🖱️ Drag & drop file upload
 
-## Backend
-- FastAPI
-- Python
-- LangChain
-- ChromaDB / FAISS
-- Mistral AI
+### 📂 Supported Files
 
-## AI / NLP
-- Embeddings
-- Retrieval-Augmented Generation (RAG)
-- Semantic Search
+`PDF` · `DOCX` · `PPTX` · `XLSX` · `CSV` · `TXT`
 
 ---
 
-# 📂 Project Structure
+## 🛠️ Tech Stack
 
-```bash
-.
-├── backend
-│   ├── main.py
-│   ├── rag.py
-│   ├── uploads/
-│   ├── requirements.txt
-│   └── .env
-│
-├── frontend
-│   ├── src/
-│   ├── package.json
-│   └── vite.config.js
-│
-└── README.md
+| Part      | Technology        |
+| --------- | ----------------- |
+| Frontend  | React, JavaScript |
+| Backend   | FastAPI, Python   |
+| RAG       | LangChain         |
+| LLM       | Groq ,OpenRouter  |
+| Vector DB | ChromaDB          |
+
+---
+
+## 🔄 How It Works
+
+```text
+📄 Upload Documents
+        ↓
+🔤 Extract & Split Text
+        ↓
+🧠 Generate Embeddings
+        ↓
+🗄️ Store in Vector Database
+        ↓
+🔍 Retrieve Relevant Content
+        ↓
+💬 Generate AI Response
 ```
 
 ---
 
-# ⚙️ Backend Setup
+## 🚀 Run Locally
 
-## 1. Clone Repository
+### 1. Clone
 
 ```bash
 git clone https://github.com/nandani-1411/DocuChat-AI.git
+cd DocuChat-AI
 ```
 
----
-
-## 2. Move into Backend
+### 2. Backend
 
 ```bash
-cd backend
-```
-
----
-
-## 3. Create Virtual Environment
-
-```bash
+cd app
 python -m venv venv
 ```
 
----
-
-## 4. Activate Environment
-
-### Windows
+**Windows:**
 
 ```bash
 venv\Scripts\activate
 ```
 
-### Linux / Mac
-
-```bash
-source venv/bin/activate
-```
-
----
-
-## 5. Install Dependencies
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
-
-# 🔑 Environment Variables
-
-Create `.env`
+Create `.env`:
 
 ```env
-MISTRAL_API_KEY=your_api_key
+GROQ_API_KEY=your_groq_api_key
 ```
 
----
-
-# ▶️ Run Backend
+Run:
 
 ```bash
 uvicorn main:app --reload
 ```
 
-Backend runs on:
+### 3. Frontend
+
+Open a new terminal:
 
 ```bash
-http://localhost:8000
-```
-
----
-
-# ⚛️ Frontend Setup
-
-## Move into Frontend
-
-```bash
-cd frontend
-```
-
----
-
-## Install Dependencies
-
-```bash
+cd frontend-rag
 npm install
-```
-
----
-
-## Run Frontend
-
-```bash
 npm run dev
 ```
 
-Frontend runs on:
+---
 
-```bash
-http://localhost:5173
-```
+## 📸 Screenshot
+
+![DocuChat-AI](screenshots/RES1.png)
+
+With documents:
+
+![DocuChat-AI](screenshots/RES2.png)
 
 ---
 
-# 📡 API Endpoints
+## 👩‍💻 Author
 
-## Upload Files
+**Nandani Parmar**
 
-```http
-POST /upload
-```
-
-Supports multiple file upload.
+[GitHub](https://github.com/nandani-1411)
 
 ---
 
-## Chat with Documents
-
-```http
-POST /chat
-```
-
-Request:
-
-```json
-{
-  "question": "Summarize the uploaded files"
-}
-```
-
----
-
-## Supported Formats
-
-```http
-GET /supported-formats
-```
-
----
-
-# 🧠 How It Works
-
-1. Upload documents
-2. Extract text from files
-3. Split into chunks
-4. Generate embeddings
-5. Store vectors in database
-6. Retrieve relevant chunks
-7. Generate AI-powered answers
-
----
-
-# 💡 Example Questions
-
-- Summarize the uploaded documents
-- What are the key topics?
-- Extract important points
-- Compare information across files
-- Generate notes from documents
-
-
-
----
-
-## AI Response
-
-![Response](screenshots/res.png)
-
----
-
-# 🔮 Future Improvements
-
-- Streaming responses
-- Voice input
-- Chat history
-- Authentication
-- Multi-user support
-- Document deletion
-- Source citations
-- Agentic workflows
-- Cloud deployment
-
----
-
-# 👩‍💻 Author
-
-Nandani Parmar
-
----
-
-# ⭐ Star the Repository
-
-If you like this project, give it a star ⭐
+⭐ If you like this project, consider giving it a star!

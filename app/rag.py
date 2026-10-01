@@ -11,10 +11,9 @@ load_dotenv()  # must run before any model is created
 from langchain_core.documents import Document
 from langchain_core.messages import HumanMessage
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
-from langchain_community.document_loaders import PyPDFLoader, CSVLoader, TextLoader, UnstructuredHTMLLoader
+from langchain_community.document_loaders import PyPDFLoader, CSVLoader, TextLoader
 
 try:
     from langchain_chroma import Chroma
@@ -25,12 +24,18 @@ except ImportError:
 # ── Config ────────────────────────────────────────────────────────────────────
 # New folder name: the old "chroma_db" was made with Mistral (1024 numbers).
 # The local model makes 384 numbers, so they cannot share one folder.
-PERSIST_DIRECTORY = "chroma_db_local"
+EMBEDDINGS = os.getenv("EMBEDDINGS", "local")  # "fastembed" on the server, "local" on your laptop
+PERSIST_DIRECTORY = "chroma_db_fastembed" if EMBEDDINGS == "fastembed" else "chroma_db_local"
 UPLOAD_FOLDER = "uploads"
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".tiff", ".bmp", ".webp"}
 SUPPORTED_EXTENSIONS = {".pdf", ".doc", ".docx", ".xls", ".xlsx", ".csv", ".ppt", ".pptx", ".txt", ".html", ".htm"} | IMAGE_EXTS
 
-embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+if EMBEDDINGS == "fastembed":  # small and fast, no torch (good for free servers)
+    from langchain_community.embeddings import FastEmbedEmbeddings
+    embedding_model = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
+else:
+    from langchain_huggingface import HuggingFaceEmbeddings
+    embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
 
 def _vs():
@@ -136,6 +141,7 @@ def _doc(text, path, kind):
 
 # ── Pictures inside files (PDF, Word, PowerPoint) ─────────────────────────────
 MAX_IMAGES = int(os.getenv("MAX_IMAGES_PER_FILE", "8"))  # limit per file, keeps uploads fast
+READ_PICTURES = os.getenv("READ_PICTURES", "true").lower() == "true"  # false = skip pictures inside files (much faster)
 MIN_SIDE = 120  # skip tiny pictures such as icons, lines and logos
 
 
@@ -152,7 +158,7 @@ def _describe_one(data: bytes):
 
 
 def _caption(data: bytes, counter: list):
-    if counter[0] >= MAX_IMAGES or counter[1] >= 2:  # stop after 2 failures, do not keep waiting
+    if not READ_PICTURES or counter[0] >= MAX_IMAGES or counter[1] >= 2:  # stop after 2 failures, do not keep waiting
         return None
     text = _describe_one(data)
     if text is False:
@@ -227,14 +233,23 @@ def _read_xlsx(path):
     return _doc("\n".join(parts), path, "xlsx")
 
 
+def _read_html(path):
+    from bs4 import BeautifulSoup
+    with open(path, encoding="utf-8", errors="ignore") as f:
+        text = BeautifulSoup(f.read(), "html.parser").get_text("\n")
+    return _doc("\n".join(l.strip() for l in text.splitlines() if l.strip()), path, "html")
+
+
 def _read_legacy(path, ext):
+    """Old .doc / .xls / .ppt need the heavy 'unstructured' package (not installed on the server)."""
     try:
         from langchain_community.document_loaders import (
             UnstructuredWordDocumentLoader, UnstructuredExcelLoader, UnstructuredPowerPointLoader)
+        loader = {".doc": UnstructuredWordDocumentLoader, ".xls": UnstructuredExcelLoader,
+                  ".ppt": UnstructuredPowerPointLoader}[ext]
+        return loader(path, mode="elements").load()
     except ImportError:
         raise RuntimeError(f"'{ext}' is an old format. Save it as .docx / .xlsx / .pptx and upload again.")
-    loader = {".doc": UnstructuredWordDocumentLoader, ".xls": UnstructuredExcelLoader, ".ppt": UnstructuredPowerPointLoader}[ext]
-    return loader(path, mode="elements").load()
 
 
 def load_document(path: str):
@@ -254,7 +269,7 @@ def load_document(path: str):
     if ext == ".txt":
         return TextLoader(path, encoding="utf-8").load()
     if ext in (".html", ".htm"):
-        return UnstructuredHTMLLoader(path).load()
+        return _read_html(path)
     if ext in IMAGE_EXTS:
         return _doc(describe_image(path), path, "image")
     raise ValueError(f"Unsupported file type: {ext}")
@@ -268,28 +283,35 @@ def _remove_chunks(path: str):
         pass
 
 
-def process_file(path: str) -> int:
+def process_file(path: str, sid: str = "public") -> int:
+    t0 = time.perf_counter()
     documents = load_document(path)
+    t1 = time.perf_counter()
     chunks = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200).split_documents(documents)
     chunks = [c for c in chunks if c.page_content.strip()]
     if not chunks:
         return 0
+    for c in chunks:
+        c.metadata["sid"] = sid  # marks whose file this is
     _remove_chunks(path)  # uploading the same file again will not make duplicates
+    t2 = time.perf_counter()
     Chroma.from_documents(documents=chunks, embedding=embedding_model, persist_directory=PERSIST_DIRECTORY)
+    t3 = time.perf_counter()
+    print(f"[timing] {os.path.basename(path)}: reading {t1 - t0:.1f}s | embedding+saving {t3 - t2:.1f}s | {len(chunks)} chunks")
     return len(chunks)
 
 
-def list_documents():
+def list_documents(sid: str = "public"):
     try:
-        metas = _vs()._collection.get(include=["metadatas"])["metadatas"]
+        metas = _vs()._collection.get(where={"sid": sid}, include=["metadatas"])["metadatas"]
     except Exception:
         return []
     names = sorted({os.path.basename(m["source"]) for m in metas if m and m.get("source")})
     return [{"filename": n, "status": "success", "note": "Indexed"} for n in names]
 
 
-def delete_document(name: str):
-    path = os.path.join(UPLOAD_FOLDER, os.path.basename(name))
+def delete_document(name: str, sid: str = "public"):
+    path = os.path.join(UPLOAD_FOLDER, sid, os.path.basename(name))
     _remove_chunks(path)
     if os.path.exists(path):
         os.remove(path)
@@ -307,12 +329,12 @@ LENGTH_HELP = {"small": "Keep the answer under 100 words.", "medium": "Use about
 
 
 def ask_question(question, mode="ask", style="", length="medium",
-                 model="openai/gpt-oss-120b", use_docs=False, history=None, provider="groq"):
+                 model="openai/gpt-oss-120b", use_docs=False, history=None, provider="groq", sid="public"):
     llm = get_llm(provider, model)
 
     context, sources = "", []
     if use_docs:
-        docs = _vs().as_retriever(search_kwargs={"k": 6}).invoke(question)
+        docs = _vs().as_retriever(search_kwargs={"k": 6, "filter": {"sid": sid}}).invoke(question)
         context = "\n\n".join(d.page_content for d in docs)
         for d in docs:
             label = os.path.basename(d.metadata.get("source", ""))

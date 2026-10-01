@@ -7,9 +7,17 @@ wheels/
 *.egg-info
 
 # Virtual environments
-.venv
-chroma_db
-chroma_db_local
-uploads
+.venv/
+
+# Secrets (never upload)
 .env
-__pycache__
+.env.*
+!.env.example
+
+# Users' files and the database (all versions)
+uploads/
+chroma_db*/
+
+# Other
+*.log
+.DS_Store

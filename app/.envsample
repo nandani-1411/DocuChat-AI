@@ -1,3 +1,13 @@
+# Copy this file to ".env" and put your real keys there.
+# Never upload ".env" to GitHub (it is in .gitignore).
+
+# ── Secret keys ──
 GROQ_API_KEY=your-groq-key
-MISTRAL_API_KEY=your-mistral-key
 OPENROUTER_API_KEY=your-openrouter-api-key
+
+# ── Optional settings (you can leave these out) ──
+# EMBEDDINGS=local            # "local" on your laptop, "fastembed" on the server (Render)
+# FRONTEND_URL=http://localhost:5173   # which website may call the backend
+# VISION_MODEL=groq:meta-llama/llama-4-scout-17b-16e-instruct   # model that reads images
+# MAX_IMAGES_PER_FILE=8       # how many pictures to read inside one file
+# READ_PICTURES=true          # false = do not read pictures inside files (faster uploads)

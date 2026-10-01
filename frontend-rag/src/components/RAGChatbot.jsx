@@ -3,7 +3,16 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { FiPaperclip, FiSend, FiPlus, FiMenu, FiX, FiCopy, FiCheck, FiSliders, FiTrash2, FiChevronDown, FiLoader } from "react-icons/fi";
 
-const API = "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
+// A random private id for this browser, so your documents are not shared with other visitors.
+const SID = (() => {
+  try {
+    let s = localStorage.getItem("docuchat-sid");
+    if (!s) { s = crypto.randomUUID(); localStorage.setItem("docuchat-sid", s); }
+    return s;
+  } catch { return "public"; }
+})();
+const SID_HEADER = { "x-session-id": SID };
 const ACCEPT = ".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,.txt,.html,.htm,.png,.jpg,.jpeg,.tiff,.bmp,.webp";
 
 // Used only if the backend /models list cannot be loaded.
@@ -131,7 +140,7 @@ export default function RAGChatbot() {
 
   useEffect(() => {
     fetch(`${API}/models`).then((r) => r.json()).then((d) => { if (d.models?.length) { setModels(d.models); setModelErr(d.errors || {}); } else setModelErr({ backend: "The backend did not send a model list. Replace main.py and restart the backend." }); }).catch(() => setModelErr({ backend: "Cannot reach the backend (/models). Is it running?" }));
-    fetch(`${API}/documents`).then((r) => r.json()).then((l) => Array.isArray(l) && setDocs(l.map((f, i) => ({ id: `old-${i}`, name: f.filename, status: f.status, note: f.note })))).catch(() => {});
+    fetch(`${API}/documents`, { headers: SID_HEADER }).then((r) => r.json()).then((l) => Array.isArray(l) && setDocs(l.map((f, i) => ({ id: `old-${i}`, name: f.filename, status: f.status, note: f.note })))).catch(() => {});
   }, []);
   useEffect(() => { try { localStorage.setItem("docuchat-chats", JSON.stringify(chats)); } catch { /* ignore */ } }, [chats]);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages.length, thinking]);
@@ -150,7 +159,7 @@ export default function RAGChatbot() {
     files.forEach((f) => form.append("files", f));
     setPending((p) => [...p, ...files.map((f) => f.name)]);
     try {
-      const res = await fetch(`${API}/upload`, { method: "POST", body: form });
+      const res = await fetch(`${API}/upload`, { method: "POST", headers: SID_HEADER, body: form });
       const data = await res.json();
       setDocs((d) => [...d, ...data.files.map((f, i) => ({ id: `${Date.now()}-${i}`, name: f.filename, status: f.status, note: f.message }))]);
     } catch {
@@ -178,7 +187,7 @@ export default function RAGChatbot() {
       const res = await fetch(`${API}/chat`, {
         signal: ctrl.signal,
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...SID_HEADER },
         body: JSON.stringify({ question: q, mode, style, length, provider: model.provider, model: model.id, use_docs: ready, history }),
       });
       const data = await res.json().catch(() => ({}));
@@ -224,7 +233,7 @@ export default function RAGChatbot() {
             <li key={d.id} title={d.note} className={`flex items-center gap-2 rounded-lg px-2 py-1.5 transition hover:bg-white/5 ${gone.includes(d.id) ? "animate-out" : "animate-rise"}`}>
               <span className={`h-2 w-2 flex-none rounded-full ${d.status === "success" ? "bg-emerald-400" : "bg-red-400"}`} />
               <div className="min-w-0 flex-1"><div className="truncate">{d.name}</div>{d.status !== "success" && <div className="text-xs text-red-300">{d.note}</div>}</div>
-              <button className={trashCls} onClick={() => removeAnimated(d.id, () => { if (d.status === "success") fetch(`${API}/documents/${encodeURIComponent(d.name)}`, { method: "DELETE" }).catch(() => {}); setDocs((x) => x.filter((y) => y.id !== d.id)); })} aria-label={`Delete ${d.name}`}><FiTrash2 /></button>
+              <button className={trashCls} onClick={() => removeAnimated(d.id, () => { if (d.status === "success") fetch(`${API}/documents/${encodeURIComponent(d.name)}`, { method: "DELETE", headers: SID_HEADER }).catch(() => {}); setDocs((x) => x.filter((y) => y.id !== d.id)); })} aria-label={`Delete ${d.name}`}><FiTrash2 /></button>
             </li>
           ))}
           {pending.map((n, i) => (
